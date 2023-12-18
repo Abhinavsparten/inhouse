@@ -1,15 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
-import image1 from "../assets/in-house.png";
 import { FaGoogle } from "react-icons/fa";
 import { FaFacebookF } from "react-icons/fa";
 
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "./GoogleAuth/GoogleAuth";
+
+provider
+
 export const Home = () => {
+    // Redirect function
   const navigate = useNavigate();
 
-  // Redirect function
-  
+  const [value,setValue] = useState('')
+
+  const handleClick =()=>{
+    signInWithPopup(auth,provider).then((data) =>{
+      setValue(data.user.email)
+      localStorage.setItem("email",data.user.email)
+    })
+  }
+
+  useEffect(()=>{
+    setValue(localStorage.getItem('email'))
+  })
 
   return (
     <section style={{ height: "100vh" }} className="position-relative pb-5">
@@ -25,7 +40,7 @@ export const Home = () => {
                 marginLeft: "0",
                 borderRadius:'15px' 
               }}
-              src={image1}
+              src='https://i.postimg.cc/CxQsKqSn/in-house.png'
               alt=""
             />
           </div>
@@ -47,13 +62,15 @@ export const Home = () => {
                   gap: "50px",
                 }}
               >
+                {value?navigate('/profile'):
                 <button
                   className="btn btn1 color mb-2 custom-button"
-                  onClick={() => console.log("Connect with Google")}
+                  onClick={handleClick}
                 >
                   <span className="button-text1">Google</span>
                   <FaGoogle className="button-icon1" />
                 </button>
+              }
 
                 <button
                   className="btn btn2 color mb-2 custom-button"

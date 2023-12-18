@@ -1,7 +1,12 @@
 // EmpolyeeForm.jsx
 
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { useNavigate } from 'react-router-dom';
+import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { addTeam } from "../../service/allapi";
+
 
 const EmpolyeeForm = ({ show, handleClose, handleAddEmployee, employeeToEdit }) => {
   const initialEmployeeState = {
@@ -10,6 +15,8 @@ const EmpolyeeForm = ({ show, handleClose, handleAddEmployee, employeeToEdit }) 
     employeeCode: "",
     slack: "",
   };
+   //object for useNavigate
+   const navigate = useNavigate()
 
   const [employeeData, setEmployeeData] = useState(initialEmployeeState);
   const [errors, setErrors] = useState({});
@@ -25,12 +32,29 @@ const EmpolyeeForm = ({ show, handleClose, handleAddEmployee, employeeToEdit }) 
     setEmployeeData((prevData) => ({
       ...prevData,
       [name]: value,
+      
     }));
   };
+  console.log(employeeData);
+ 
+  const handleSave = async() => {
+  
+    console.log(employeeData);
 
-  const handleSave = () => {
+    //api call
+    const response = await addTeam(employeeData)
+    if (response.status == 200) {
+      toast.success(response.data.message);
+      setTimeout(()=> {
+        navigate('/profile')
+      }, 1500);
+    }else{
+     
+      toast.error(response.data.message);
+    }
     const validationErrors = validateForm(employeeData);
     setErrors(validationErrors);
+
 
     if (Object.keys(validationErrors).length === 0) {
       handleAddEmployee(employeeData, !!employeeToEdit);
@@ -50,12 +74,13 @@ const EmpolyeeForm = ({ show, handleClose, handleAddEmployee, employeeToEdit }) 
       errors.role = "Role is required";
     }
 
+
     if (!data.employeeCode.trim()) {
       errors.employeeCode = "Employee Code is required";
     }
 
     if (!data.slack.trim()) {
-      errors.slack = "Slack is required";
+      errors.slack = "Email is required";
     }
 
     return errors;
@@ -64,74 +89,91 @@ const EmpolyeeForm = ({ show, handleClose, handleAddEmployee, employeeToEdit }) 
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>{employeeToEdit ? "Edit Employee" : "Add Employee"}</Modal.Title>
+        <Modal.Title>{employeeToEdit ? "Edit Team Member" : "Add Team Member"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group controlId="name">
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter name"
-              name="name"
-              value={employeeData.name}
-              onChange={handleChange}
-              isInvalid={!!errors.name}
-            />
-            <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
-          </Form.Group>
+          <Row>
+            <Col>
+              <Form.Group controlId="name">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter name"
+                  name="name"
+                  value={employeeData.name}
+                  onChange={handleChange}
+                  isInvalid={!!errors.name}
+                />
+                <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="role">
+                <Form.Label>Role</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter role"
+                  name="role"
+                  value={employeeData.role}
+                  onChange={handleChange}
+                  isInvalid={!!errors.role}
+                />
+                <Form.Control.Feedback type="invalid">{errors.role}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
-          <Form.Group controlId="role">
-            <Form.Label>Role</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter role"
-              name="role"
-              value={employeeData.role}
-              onChange={handleChange}
-              isInvalid={!!errors.role}
-            />
-            <Form.Control.Feedback type="invalid">{errors.role}</Form.Control.Feedback>
-          </Form.Group>
+          <Row>
+            <Col>
+            <Form.Group controlId="slack">
+                <Form.Label>Slack</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter Your Email"
+                  name="slack"
+                  value={employeeData.slack}
+                  onChange={handleChange}
+                  isInvalid={!!errors.slack}
+                />
+                <Form.Control.Feedback type="invalid">{errors.slack}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
-          <Form.Group controlId="employeeCode">
-            <Form.Label>Employee Code</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter employee code"
-              name="employeeCode"
-              value={employeeData.employeeCode}
-              onChange={handleChange}
-              isInvalid={!!errors.employeeCode}
-            />
-            <Form.Control.Feedback type="invalid">{errors.employeeCode}</Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group controlId="slack">
-            <Form.Label>Slack</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter Slack"
-              name="slack"
-              value={employeeData.slack}
-              onChange={handleChange}
-              isInvalid={!!errors.slack}
-            />
-            <Form.Control.Feedback type="invalid">{errors.slack}</Form.Control.Feedback>
-          </Form.Group>
+          <Row>
+            <Col>
+              <Form.Group controlId="employeeCode">
+                <Form.Label>Employee Code</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter employee code"
+                  name="employeeCode"
+                  value={employeeData.employeeCode}
+                  onChange={handleChange}
+                  isInvalid={!!errors.employeeCode}
+                />
+                <Form.Control.Feedback type="invalid">{errors.employeeCode}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+    
+          </Row>
         </Form>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleSave}>
-          Save
+        <Button variant="dark" onClick={handleSave}>
+         Add
         </Button>
       </Modal.Footer>
+      <ToastContainer position="top-center" />
+
     </Modal>
   );
 };
 
 export default EmpolyeeForm;
+
 
